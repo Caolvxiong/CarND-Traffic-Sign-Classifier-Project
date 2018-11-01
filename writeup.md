@@ -114,23 +114,28 @@ My final model results were:
 If an iterative approach was chosen:
 * What was the first architecture that was tried and why was it chosen?
     
-    I used the code from LeNet lab in the lecture. Then I made some updates to it to fit in our problem here.
+    I used the code from LeNet lab in the lecture. Because it's almost the same use cases. Then I made some updates to it to fit in our problem here.
      
 * What were some problems with the initial architecture?
        
-    Number of classes are different.
+    1. Number of classes are different.
     
-    Iutput dimentions are different. 
+    2. Iutput dimentions are different. 
     
-    Acurracy is not good enough.
+    3. Acurracy is not good enough.
     
 * How was the architecture adjusted and why was it adjusted? Typical adjustments could include choosing a different model architecture, adding or taking away layers (pooling, dropout, convolution, etc), using an activation function or changing the activation function. One common justification for adjusting an architecture would be due to overfitting or underfitting. A high accuracy on the training set but low accuracy on the validation set indicates over fitting; a low accuracy on both sets indicates under fitting.
 
-    To prevent over fitting, I added dropout.
+    I did a lot of trying of training the updated LeNet code but it didn't work well. The accuracy is at most 92%. 
+    
+    So I did some research in the course resources and online. Finally I decided to add `tf.nn.dropout()`. 
+    This forces the network learn using redundant representation for everything by applying a drop probability of 50%. It can make the network more robust.
     
 * Which parameters were tuned? How were they adjusted and why?
     
-    Learning rate, epechs
+    I tried a lot of tuning the learning rate and epochs.
+    
+    Firstly, the learning rate was 0.01 and epoch 40. But it's not good enough, after a lot of back and forth, finally I made them 0.0012 and 50 epoch.
     
 * What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
     
@@ -169,18 +174,54 @@ The model was able to correctly guess 6 of the 6 traffic signs, which gives an a
 
 #### 3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
 
-The code for making predictions on my final model is located in the 11th cell of the Ipython notebook.
+I used `sess.run(tf.nn.top_k(tf.constant(a), k=5))` method to generate the values and indices (class ids) of the top 5 predictions. 
 
-For the first image, the model is relatively sure that this is a stop sign (probability of 0.6), and the image does contain a stop sign. The top five soft max probabilities were
+The raw output is like below, which is showing in the ipynb file and HTML output as well:
 
-| Probability         	|     Prediction	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| 1                		| Stop sign   									| 
-| 0.999               	| Turn right ahead 								|
-| 0.998             	| Speed limit (60km/h)							|
-| 0.999    	      		| No entry					 	    			|
-| 1          			| Road work       				    			|
-| 0.904             	| Speed limit (100km/h)     		    		|
+```
+values=array([[  1.00000000e+00,   6.62047639e-11,   2.55759519e-12,
+          3.28098524e-13,   2.39975628e-13],
+       [  1.00000000e+00,   2.38301930e-11,   4.31474257e-12,
+          6.93528808e-15,   5.04318156e-17],
+       [  9.99809444e-01,   1.90580075e-04,   1.56659041e-09,
+          8.68713435e-10,   2.04789213e-10],
+       [  9.99847531e-01,   1.52236957e-04,   6.42974598e-08,
+          5.55156952e-08,   4.10474463e-08],
+       [  1.00000000e+00,   3.99670511e-17,   2.51116003e-17,
+          1.12691344e-18,   2.36870794e-19],
+       [  7.12511241e-01,   2.78924465e-01,   7.81362597e-03,
+          6.85630075e-04,   5.55059814e-05]], dtype=float32), indices=array([[14, 33, 12,  4, 13],
+       [33, 14, 35, 13, 39],
+       [ 3,  5, 42,  2,  6],
+       [17, 14, 33,  4, 39],
+       [25, 20, 22, 29, 24],
+       [ 7, 40,  1,  8, 12]], dtype=int32))
+       
+To make is more readable, I make two talbes here(just for demo, not in code):
+       
+Top 5 softmax probabilities for each image:
+
+| 1              | 2               |    3	   	     |  4              | 5               |
+|:--------------:|:---------------:|:---------------:|:---------------:|:---------------:| 
+|  1.00000000e+00|   4.52442350e-09|   3.62675689e-09|   7.91167132e-10|   6.60578481e-10|
+|  9.99998689e-01|   1.32900925e-06|   5.41109033e-11|   4.88772694e-12|   2.20905455e-12|
+|  9.99850750e-01|   1.48977313e-04|   1.99902985e-07|   4.51238407e-08|   1.30417535e-08|
+|  9.99999642e-01|   4.06699485e-07|   2.73375367e-08|   4.08073619e-09|   1.67154290e-09|
+|  1.00000000e+00|   2.19890100e-12|   5.06858993e-14|   9.65517610e-15|   8.74828333e-15|
+|  9.04017389e-01|   8.57333392e-02|   7.15107238e-03|   1.90547458e-03|   5.75917889e-04|
+
+Top 5 results(traffic sign lables):
+
+| 1              | 2               |    3	   	     |  4              | 5               |
+|:--------------:|:---------------:|:---------------:|:---------------:|:---------------:| 
+|14              | 34              | 15              | 17              | 39              |
+|33              | 39              | 14              | 35              | 13              |
+|3               |  5              | 23              | 10              | 16              |
+|17              | 14              |  0              | 34              | 36              |
+|25              | 20              | 29              | 22              | 30              |
+| 7              | 40              | 12              |  1              | 16              |
+
+They are predicted pretty good. Accuracy is 100% and certenty is high.
 
 
 ### (Optional) Visualizing the Neural Network (See Step 4 of the Ipython notebook for more details)
